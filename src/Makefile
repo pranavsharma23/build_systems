@@ -23,19 +23,54 @@
 #------------------------------------------------------------------------------
 include sources.mk
 
-# Platform Overrides
-PLATFORM = 
+
+PLATFORM = HOST
+TARGET = c1m2
 
 # Architectures Specific Flags
-LINKER_FILE = 
-CPU = 
-ARCH = 
-SPECS = 
+LINKER_FILE = msp432p401r.lds
+CPU = cortex-m4
+ARCH = thumb
+SPECS = nosys.specs
 
 # Compiler Flags and Defines
-CC = 
-LD = 
+LD = arm-none-eabi-ld
 LDFLAGS = 
-CFLAGS = 
-CPPFLAGs = 
+CFLAGS = -mcpu=$(CPU) -m$(ARCH) --specs=$(SPECS) -Wall -Werror -g -std=c99 \
+	 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16
+CPPFLAGs = -D$(PLATFORM)
 
+ifeq ($(PLATFORM),MSP432)
+	CC = arm-none-eabi-gcc
+	LDFLAGS = -Wl, -Map=$(TARGET).map -T $(LINKER_FILE)
+else
+	CC = gcc
+endif
+
+OBJS = $(SRCS:.c=.o)
+
+%.i : %.c
+	$(CC) -E $(CPPFLAGs) -o $< $@
+
+%.asm : %.c
+	$(LD) -S -o $< $@
+	$(OBJDUMP) $@
+
+%.d : %.c
+	$(CC) -MM $(CPPFLAGs) $< -o $@
+
+%.o : %.c
+	$(CC) -c $< $(CFLAGS) -o $@
+
+.PHONY: build
+build: all
+
+.PHONY: all
+all: $(TARGET).out
+
+$(TARGET).out: $(OBJS)
+	$(CC) $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+
+.PHONY: clean
+clean:
+	rm -f $(OBJS) $(TARGET).out $(TARGET).map
