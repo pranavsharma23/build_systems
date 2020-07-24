@@ -10,20 +10,22 @@
 #*****************************************************************************
 
 # Add your Source files to this variable
-SOURCES =	src/interrupts_msp432p401r_gcc.c		\
-		src/main.c					\
-		src/memory.c					\
-		src/startup_msp432p401r_gcc.c			\
-		src/system_msp432p401r.c
+ifeq ($(PLATFORM),HOST)
+	SOURCES =	main.c				\
+			memory.c
+else ifeq ($(PLATFORM),MSP432)
+	SOURCES =	interrupts_msp432p401r_gcc.c	\
+			main.c				\
+			memory.c			\
+			startup_msp432p401r_gcc.c	\
+			system_msp432p401r.c
+endif
 
 # Add your include paths to this variable
-INCLUDES =	include/CMSIS/cmsis_gcc.h			\
-		include/CMSIS/core_cm4.h			\
-		include/CMSIS/core_cmFunc.h			\
-		include/CMSIS/core_cmInstr			\
-		include/CMSIS/core_cmSimd.h			\
-		include/common/memory.h				\
-		include/common/platform.h			\
-		include/msp432/msp432p401r.h			\
-		include/msp432/msp_compatibility.h		\
-		include/msp432/system_msp432p401r.h
+ifeq ($(PLATFORM),HOST)
+	INCLUDES =	-I../include/common/
+else ifeq ($(PLATFORM),MSP432)
+	INCLUDES =	-I../include/CMSIS/		\
+			-I../include/common/		\
+			-I../include/msp432/
+endif

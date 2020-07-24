@@ -24,30 +24,33 @@
 include sources.mk
 
 
-PLATFORM = HOST
+PLATFORM = 
 TARGET = c1m2
 
 # Architectures Specific Flags
-LINKER_FILE = msp432p401r.lds
+LINKER_FILE = ../msp432p401r.lds
 CPU = cortex-m4
 ARCH = thumb
 SPECS = nosys.specs
 
 # Compiler Flags and Defines
 LD = arm-none-eabi-ld
-LDFLAGS = 
-CFLAGS = -mcpu=$(CPU) -m$(ARCH) --specs=$(SPECS) -Wall -Werror -g -std=c99 \
-	 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16
+LDFLAGS = -T $(LINKER_FILE)
+#CFLAGS = -mcpu=$(CPU) -m$(ARCH) --specs=$(SPECS) -Wall -Werror -g -std=c99 \
+#	 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16
 CPPFLAGs = -D$(PLATFORM)
 
 ifeq ($(PLATFORM),MSP432)
 	CC = arm-none-eabi-gcc
-	LDFLAGS = -Wl, -Map=$(TARGET).map -T $(LINKER_FILE)
-else
+	CFLAGS = -Wall -Werror -g -O0 -std=c99 $(LDFLAGS) -mcpu=$(CPU) \
+		 -m$(ARCH) -march=armv7e-m -mfloat-abi=hard \
+		 -mfpu=fpv4-sp-d16 --specs=$(SPECS)
+else ifeq ($(PLATFORM),HOST)
 	CC = gcc
+	CFLAGS = -Wall -Werror -g -O0 -std=c99
 endif
 
-OBJS = $(SRCS:.c=.o)
+OBJS = $(SOURCES:.c=.o)
 
 %.i : %.c
 	$(CC) -E $(CPPFLAGs) -o $< $@
@@ -60,7 +63,7 @@ OBJS = $(SRCS:.c=.o)
 	$(CC) -MM $(CPPFLAGs) $< -o $@
 
 %.o : %.c
-	$(CC) -c $< $(CFLAGS) -o $@
+	$(CC) $(INCLUDES) -c $< $(CFLAGS) -o $@
 
 .PHONY: build
 build: all
@@ -69,7 +72,7 @@ build: all
 all: $(TARGET).out
 
 $(TARGET).out: $(OBJS)
-	$(CC) $(OBJS) $(CFLAGS) $(LDFLAGS) -o $@
+	$(CC) $(OBJS) $(CFLAGS) -o $@
 
 .PHONY: clean
 clean:
