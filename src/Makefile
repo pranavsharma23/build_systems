@@ -24,7 +24,7 @@
 include sources.mk
 
 
-PLATFORM = 
+PLATFORM =
 TARGET = c1m2
 
 # Architectures Specific Flags
@@ -36,8 +36,7 @@ SPECS = nosys.specs
 # Compiler Flags and Defines
 LD = arm-none-eabi-ld
 LDFLAGS = -T $(LINKER_FILE)
-#CFLAGS = -mcpu=$(CPU) -m$(ARCH) --specs=$(SPECS) -Wall -Werror -g -std=c99 \
-#	 -march=armv7e-m -mfloat-abi=hard -mfpu=fpv4-sp-d16
+
 CPPFLAGs = -D$(PLATFORM)
 
 ifeq ($(PLATFORM),MSP432)
@@ -53,17 +52,17 @@ endif
 OBJS = $(SOURCES:.c=.o)
 
 %.i : %.c
-	$(CC) -E $(CPPFLAGs) -o $< $@
+	$(CC) $(CPPFLAGs) -E -o $< $@
 
 %.asm : %.c
 	$(LD) -S -o $< $@
 	$(OBJDUMP) $@
 
 %.d : %.c
-	$(CC) -MM $(CPPFLAGs) $< -o $@
+	$(CC) $(CPPFLAGs) -MM $< -o $@
 
 %.o : %.c
-	$(CC) $(INCLUDES) -c $< $(CFLAGS) -o $@
+	$(CC) $(INCLUDES) -c $< $(CPPFLAGs) $(CFLAGS) -o $@
 
 .PHONY: build
 build: all
