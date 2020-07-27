@@ -52,10 +52,10 @@ endif
 OBJS = $(SOURCES:.c=.o)
 
 %.i : %.c
-	$(CC) $(CPPFLAGs) -E -o $< $@
+	$(CC) $(INCLUDES) -E -o $< $@
 
 %.asm : %.c
-	$(LD) -S -o $< $@
+	$(CC) -S -o $< $@
 	$(OBJDUMP) $@
 
 %.d : %.c
